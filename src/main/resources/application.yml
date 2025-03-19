@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: ms-spring-secure-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: service1
+          uri: 'http://localhost:8001'
+          predicates:
+            - Path=/api/v1/service1/**
+          filters:
+            - AddRequestHeader=X-Request-Id, 1234
+
+        - id: service2
+          uri: 'http://localhost:8002'
+          predicates:
+            - Path=/api/v1/service2/**
+          filters:
+            - AddRequestHeader=X-Request-Id, 1234
+    config:
+      enabled: false
+  config:
+    import: optional:configserver
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: gateway
+
+
+server:
+  port: 8081
