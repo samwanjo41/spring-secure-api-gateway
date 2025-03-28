@@ -10,6 +10,23 @@ spring:
             - Path=/api/v1/service1/**
           filters:
             - AddRequestHeader=X-Request-Id, 1234
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT
+                methods: GET, POST
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter:
+                  replenishRate: 10
+                  burstCapacity: 20
+                  requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
         - id: service2
           uri: 'http://localhost:8002'
@@ -38,6 +55,13 @@ management:
     web:
       exposure:
         include: gateway
+
+  tracing:
+    sampling:
+      probability: 0.0
+#  zipkin:
+#    tracing:
+#      endpoint: http://localhost:9411/api/v2/spans
 
 
 server:
